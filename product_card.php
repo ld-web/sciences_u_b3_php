@@ -2,7 +2,8 @@
   <img src="<?php echo $product['image']; ?>" class="card-img-top" alt="<?php echo $product['nom']; ?>" />
   <div class="card-body">
     <h5 class="card-title"><?php echo $product['nom']; ?></h5>
-    <p><?php echo $product['prix']; ?> €</p>
+    <p><?php echo $product['prixHT']; ?> €</p>
+    <p><?php echo calculTtc($product['prixHT']); ?> €</p>
     <?php if ($product['promo']) { ?>
       <span class="badge badge-success">Promotion</span>
     <?php } ?>
