@@ -1,4 +1,8 @@
 <?php
+
+declare(strict_types=1);
+require_once 'functions.php';
+
 echo "Hello World<br />"; // Instruction echo affiche quelque chose à l'écran
 $numero = 1;
 
@@ -22,3 +26,11 @@ echo "Valeur de mon booléen : " . $bool;
 // var_dump permet d'afficher le contenu d'une variable à l'écran
 // Différent de la fonction "echo", elle est davantage utilisée pour du débuggage
 var_dump($bool);
+
+direBonjour("Lucas");
+direBonjour("Florian");
+
+$paragraph = paragraphMajuscules("Hello world");
+echo $paragraph;
+
+echo paragraphMajuscules("Hello world");
