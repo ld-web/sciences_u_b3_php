@@ -85,6 +85,22 @@ Généralement, on va utiliser des **boucles** pour afficher chaque élément d'
 >- `foreach`
 >- `do...while`
 
+## Comparaison et égalité, différence
+
+Quand on veut vérifier qu'une valeur est égale à une autre en PHP, on va utiliser l'opérateur de comparaison `==`.
+
+On peut également tester l'égalité de manière plus **stricte**, en comparant **à la fois la valeur et le type** des variables. Dans ce cas, on va utiliser `===`.
+
+```php
+$a = "3"; // type string
+$b = 3; // type int
+
+$a == $b; // Vrai => comparaison sur les valeurs
+$a === $b; // Faux => comparaison sur les valeurs ET le type, les types sont différents
+```
+
+L'opérateur "différent de" en PHP est `!=`. De la même façon, on pourra comparer de manière stricte 2 variables en utilisant `!==`.
+
 ## L'inclusion de fichiers
 
 En PHP, il est possible d'inclure un fichier dans un autre, à l'aide de plusieurs méthodes de la SPL.
