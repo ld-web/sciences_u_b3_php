@@ -29,6 +29,7 @@ var_dump($bool);
 
 direBonjour("Lucas");
 direBonjour("Florian");
+direBonjour();
 
 $paragraph = paragraphMajuscules("Hello world");
 echo $paragraph;
