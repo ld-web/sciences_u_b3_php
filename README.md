@@ -118,7 +118,7 @@ On va donc pouvoir séparer les différentes parties de notre script PHP en plus
 
 ## Fonctions
 
-Une fonction est un suite d'instructions nommée, qu'on peut appeler partout où on en a besoin.
+Une fonction est une suite d'instructions nommée, qu'on peut appeler partout où on en a besoin.
 
 ```php
 <?php
