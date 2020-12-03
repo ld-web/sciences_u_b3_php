@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 require_once 'functions.php';
+require_once 'layout/header.php';
 
 echo "Hello World<br />"; // Instruction echo affiche quelque chose à l'écran
 $numero = 1;
@@ -35,3 +36,5 @@ $paragraph = paragraphMajuscules("Hello world");
 echo $paragraph;
 
 echo paragraphMajuscules("Hello world");
+
+require_once 'layout/footer.php';
