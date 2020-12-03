@@ -8,6 +8,8 @@ require_once 'functions.php';
 $id = intval($_GET['id']);
 
 // 1ère solution
+// - Recherche
+// - Affichage de la card detail si trouvé
 // foreach ($products as $product) {
 //   if ($product['id'] === $id) {
 //     require 'product_card.php';
