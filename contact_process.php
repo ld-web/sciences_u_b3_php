@@ -1,15 +1,26 @@
 <?php
 require_once 'layout/header.php';
+require_once 'include/email_functions.php';
 
 if (
   empty($_POST['name']) ||
   empty($_POST['firstname']) ||
-  empty($_POST['email']) || !filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) ||
+  empty($_POST['email']) ||
   empty($_POST['gpdr']) ||
   empty($_POST['subject']) ||
   empty($_POST['message'])
 ) {
-  echo "Vous n'avez pas renseigné toutes les données requises ou bien les données sont incorrectes";
+  echo "Vous n'avez pas renseigné toutes les données requises";
+  exit;
+}
+
+try {
+  if (isEmailSpam($_POST['email'])) {
+    echo "L'email entré est considéré comme indésirable";
+    exit;
+  }
+} catch (InvalidArgumentException $ex) {
+  echo "L'email entré est incorrect";
   exit;
 }
 
