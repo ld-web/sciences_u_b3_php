@@ -616,3 +616,38 @@ class ProduitRect extends Produit
   }
 }
 ```
+
+#### Portées et héritage
+
+Nous avons évoqué précédemment la portée `protected` pour un attribut ou une méthode. L'intérêt des portées se trouve dans ce qu'on souhaite exposer à l'extérieur d'une classe. L'extérieur d'une classe inclut donc le code qui va instancier des objets de cette classe, mais aussi les éventuelles classes héritant d'une classe.
+
+Dans notre exemple, la classe `ProduitRect` ne peut pas accéder directement aux attributs `$nom` et `$prix` car ils sont définis comme `private`.
+
+Si on voulait pouvoir accéder à ces attributs définis dans `Produit` depuis la classe enfant `ProduitRect`, il faudrait alors les rendre `protected` :
+
+```php
+class Produit
+{
+  protected $nom;
+  protected $prix;
+  //...
+}
+
+//...
+
+class ProduitRect extends Produit
+{
+  //...
+
+  public function displayInfos()
+  {
+    // On peut ici utiliser $this->nom car $nom est protected dans Produit
+    echo $this->nom . ", rectangulaire : L" . $this->largeur . ", H" . $this->hauteur;
+  }
+```
+
+Pour résumer les portées des attributs, méthodes ou constantes :
+
+- `public` : accessible n'importe où par n'importe qui
+- `protected` : inaccessible par un code instanciant un objet de cette classe, mais accessible par les classes héritant de cette classe
+- `private` : inaccessible par tout code extérieur, enfants inclus. Manipulable uniquement dans la classe courante
