@@ -773,3 +773,186 @@ Ainsi, tout comme nous l'avons vu précédemment concernant les classes abstrait
 Quel que soit le type concret de l'objet, si on le considère comme un `IDisplayable` alors on sait qu'il doit respecter le contrat et qu'on peut donc appeler la méthode `display` sur cet objet.
 
 Nous aurons donc également un comportement polymorphique.
+
+## Bases de données - PDO
+
+Nous avons, pour le moment, impliqué 2 acteurs dans le fonctionnement de notre application : un client (le navigateur) et un serveur (notre application PHP).
+
+Si nous souhaitons réaliser une application retenant des données, et donnant la possibilité à ces données d'évoluer avec le temps, alors nous devons inclure un troisième acteur : un serveur de bases de données.
+
+> Le serveur de bases de données représente la couche permettant de **persister** vos données, ou les sauvegarder, les retenir, si vous préférez
+
+Ainsi, depuis notre application PHP, nous allons communiquer avec une base de données à l'aide d'un objet de type `PDO`.
+
+> Retrouvez la documentation de la classe `PDO` sur la [documentation PHP](https://www.php.net/manual/fr/book.pdo.php)
+
+### Accès
+
+Dans un premier temps, il faut définir les propriétés d'accès à la base de données. Pour ça, on va devoir fournir à notre application certaines informations :
+
+- Un hôte (l'endroit où se trouve le serveur de bases de données), éventuellement suivi d'un port
+- Un nom de base de données (le "catalogue" contenant nos données, dans des tables)
+- Un utilisateur
+- Un mot de passe
+- Un jeu de caractères
+
+#### DSN
+
+Le constructeur de la classe `PDO` attend, en premier paramètre, un **DSN** (Data Source Name).
+
+Nous allons le définir de la façon suivante :
+
+```php
+/*
+mysql:  => le pilote à utiliser pour la connexion
+dbname  => le nomde la base de données
+host    => l'hôte auquel il faut se connecter
+charset => le jeu de caractères à utiliser
+*/
+$dsn = 'mysql:dbname=sciences_u_users;host=127.0.0.1;charset=utf8mb4';
+```
+
+#### Connexion
+
+Ensuite, en second et troisième paramètres, un utilisateur et un mot de passe, et nous pouvons instancier un nouvel objet de type `PDO` :
+
+```php
+$dsn = 'mysql:dbname=sciences_u_users;host=127.0.0.1;charset=utf8mb4';
+$user = 'mon_user';
+$password = 'mon_mot_de_passe';
+
+try {
+  $pdo = new PDO($dsn, $user, $password);
+} catch (PDOException $e) {
+  echo 'Connexion échouée : ' . $e->getMessage();
+}
+```
+
+> La documentation nous indique que si la connexion a échoué, le constructeur de la classe peut lancer une exception. Il convient donc d'encadrer la construction de l'objet par un bloc `try/catch` afin d'avoir une gestion d'erreurs minimale
+
+### Requêtes
+
+Une fois que notre objet `PDO` est instancié, nous allons pouvoir l'utiliser pour émettre des requêtes SQL vers notre serveurs de bases de données.
+
+La manière la plus rapide d'exécuter une requête est d'utiliser la méthode `query` :
+
+```php
+$query = "SELECT * FROM users";
+$stmt = $pdo->query($query);
+```
+
+Cette méthode nous renvoie une instace d'objet `PDOStatement`.
+
+Par la suite, nous allons donc devoir parcourir les enregistrements de ce statement. Commençons par récupérer le premier :
+
+```php
+// row = ligne (contenant les données d'un enregistrement)
+// fetch signifie "lire"/"récupérer"
+$row = $stmt->fetch();
+var_dump($row);
+```
+
+Si nous voulions récupérer tous les enregistrements, un par un donc, avec la méthode `fetch`, nous devrions utiliser une boucle :
+
+```php
+// Le while s'arrêtera automatiquement après la dernière ligne des résultats, puisque la méthode fetch renverra false
+while ($row = $stmt->fetch()) {
+  var_dump($row);
+}
+```
+
+Enfin, si nous voulions récupérer tous les enregistrements directement dans une variable, nous pourrions également utiliser la méthode `fetchAll` :
+
+```php
+$results = $stmt->fetchAll();
+```
+
+#### Mode de lecture
+
+Par défaut, `fetch` ou `fetchAll` nous renvoient un tableau mélangeant des index numériques et des clés portant le nom des colonnes du résultat.
+
+Si on veut récupérer seulement un tableau associatif, on peut l'indiquer à PDO :
+
+```php
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+  var_dump($row);
+}
+```
+
+On pourra ainsi exploiter chaque `$row` en accédant à ses colonnes via leur nom, comme un tableau associatif (`$row['nom']` par exemple).
+
+#### Requêtes non préparées vs. requêtes préparées
+
+Nous avons vu que le moyen le plus simple d'exécuter une requête était l'utilisation de la méthode `query`.
+
+Avec cette méthode, il est possible d'exécuter n'importe quel type de requête SQL (SELECT, UPDATE, INSERT, DELETE).
+
+Mais il peut arriver que la requête à exécuter se base sur la saisie d'un utilisateur dans un formulaire (login, inscription, etc...).
+
+Dans ce cas, il est possible que l'utilisateur tente, par sa saisie, de corrompre la requête que nous allons générer, afin d'exécuter une requête arbitraire. C'est ce qu'on appelle une [injection SQL](https://owasp.org/www-community/attacks/SQL_Injection).
+
+Afin d'éviter ce problème, on peut utiliser des **requêtes préparées**.
+
+Une requête non préparée s'effectue en une seule étape : j'appelle `query` pour lancer ma requête.
+
+Avec une requête préparée, on va dans un premier temps **préparer** une requête, avec des paramètres, puis, dans un second temps, exécuter la requête en passant des valeurs concrètes pour chaque paramètre.
+
+```php
+// Requête préparée avec des paramètres nommés
+// 1 - Préparation de la requête
+$stmt = $pdo->prepare("INSERT INTO users (pseudo, email, `password`) VALUES (:pseudo, :email, :pass)");
+// 2 - Exécution de la requête préparée, avec des valeurs
+$stmt->execute([
+  'pseudo' => $pseudo,
+  'email' => $email,
+  'pass' => $password
+]);
+```
+
+On peut nommer les paramètres comme ci-dessus, ou bien utiliser des paramètres non nommés :
+
+```php
+// Requête préparée avec des paramètres non nommés
+// 1 - Préparation de la requête
+$stmt = $pdo->prepare("INSERT INTO users (pseudo, email, `password`) VALUES (?, ?, ?)");
+// 2 - Exécution de la requête préparée, avec des valeurs
+$stmt->execute([$pseudo, $email, $password]);
+```
+
+## Sessions
+
+Les sessions permettent au serveur PHP de reconnaître une session de navigation donnée, donc potentiellement un utilisateur connecté. C'est grâce aux sessions, par exemple, qu'une fois connecté, on n'a pas besoin de se reconnecter à chaque page consultée.
+
+L'identification d'une sessions par le serveur s'effectue par la lecture d'un **cookie**.
+
+Par défaut, ce cookie sera nommé `PHPSESSID`, et contient une valeur aléatoire : l'identifiant de session.
+
+Côté serveur, s'il identifie avec succès un `PHPSESSID`, alors il sera capable de restituer un contexte (un tableau de clés/valeurs) préalablement défini, et qu'on peut faire évoluer au fil des pages consultées.
+
+Ainsi, une session peut suivre un utilisateur durant toute sa navigation sur notre application.
+
+Les sessions permettent de fournir des fonctionnalités comme l'authentification ou un panier de produits par exemple.
+
+Pour utiliser les sessions dans notre application, il est obligatoire d'utiliser en premier lieu la fonction `session_start()` de la SPL.
+
+Si aucune session n'était démarrée, le serveur crée un nouvel identifiant de session et le cookie associé pour le renvoyer au navigateur. Il initialise également la variable superglobale `$_SESSION`, vide par défaut.
+
+S'il existait déjà une session stockée sur le serveur, alors le serveur restitue le tableau `$_SESSION` avec les paires de clés/valeurs que l'on a pu définir pour cet utilisateur (connecté ? Est-ce qu'il y a un panier ? Avec quel(s) produit(s) dedans ? Etc...).
+
+```php
+// 1ère exécution : création d'un identifiant de session
+// exécutions suivantes : lecture du cookie PHPSESSID et restitution de la session
+// Attention : si on n'utilise pas session_start(), le tableau $_SESSION n'est pas défini !
+session_start();
+
+// Ici, $_SESSION est vide
+var_dump($_SESSION);
+
+$_SESSION['connected'] = false;
+
+// A présent, $_SESSION contient une clé "connected" associée à la valeur false
+// Si on recharge la page, alors le var_dump d'avant, qui présentait une session vide, présentera à présent le tableau contenant déjà la clé "connected"
+var_dump($_SESSION);
+```
+
+> Note importante : si vous appelez `session_start()` plusieurs fois, une erreur sera générée par PHP. Veillez à l'appeler une et une seule fois au début de l'exécution de votre script. Vous pouvez également vous documenter pour trouver un moyen de vérifier si une session a déjà été démarrée, et la démarrer si ce n'est pas le cas
