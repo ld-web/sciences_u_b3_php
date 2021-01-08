@@ -542,9 +542,9 @@ class Email
     if (!$this->isValid()) {
       throw new InvalidArgumentException("Email incorrect");
     }
-  
+
     $emailParts = explode("@", $this->value);
-  
+
     $domain = $emailParts[1];
     // J'accède ici à la constante de la classe avec self::BLACKLIST
     return in_array($domain, self::BLACKLIST);
@@ -590,7 +590,7 @@ class ProduitRect extends Produit
 {
   private $largeur;
   private $hauteur;
-  
+
   public function __construct(int $l, int $h)
   {
     parent::__construct(); // Ici, j'appelle le constructeur parent
@@ -607,7 +607,7 @@ class ProduitRect extends Produit
 {
   private $largeur;
   private $hauteur;
-  
+
   public function __construct(int $l, int $h, string $nom = "Téléviseur")
   {
     parent::__construct($nom); // Ici, j'appelle le constructeur parent
@@ -616,6 +616,8 @@ class ProduitRect extends Produit
   }
 }
 ```
+
+> Une classe ne peut hériter que d'une et une seule classe. L'héritage multiple n'est pas possible
 
 #### Portées et héritage
 
@@ -651,3 +653,123 @@ Pour résumer les portées des attributs, méthodes ou constantes :
 - `public` : accessible n'importe où par n'importe qui
 - `protected` : inaccessible par un code instanciant un objet de cette classe, mais accessible par les classes héritant de cette classe
 - `private` : inaccessible par tout code extérieur, enfants inclus. Manipulable uniquement dans la classe courante
+
+### Classes abstraites
+
+Avec le mot-clé `abstract`, placé avant le mot-clé `class`, il est possible de rendre une classe **abstraite**.
+
+Quel est l'intérêt d'une classe abstraite ?
+
+- Une classe abstraite ne peut pas être instanciée. Ainsi, si on veut définir une structure de classe réellement **de base**, qui sera héritée ensuite, mais dont on ne veut pas manipuler d'instances de classes, alors on peut la rendre abstraite. Dans notre exemple, on définit une classe abstraite `AbstractProduit`, en tant qu'abstraction, avec des attributs généraux. Mais les produits dont on souhaite manipuler des instances sont les `ProduitRect` ou les `ProduitCirc`
+
+- Dans une classe abstraite, il est possible de définir une ou plusieurs **méthodes abstraites**. Une méthode abstraite ne définir aucun corps de méthode (aucune implémentation). Ainsi, le fait de définir une méthode abstraite **force les classes enfants à fournir une implémentation de cette méthode**
+
+```php
+abstract class AbstractProduit
+{
+  protected $nom;
+  // ...
+
+  // On définit une méthode qui devra être implémentée par toutes les classes enfants
+  public abstract function getSurface(): float;
+}
+
+class ProduitRect extends AbstractProduit
+{
+  private $largeur;
+  private $hauteur;
+  //...
+
+  // On fournit une implémentation de la méthode getSurface
+  public function getSurface(): float
+  {
+    return $this->largeur * $this->hauteur;
+  }
+}
+```
+
+### Polymorphisme
+
+La définition d'une classe parente, abstraite ou non, ouvre la voie à des comportements **polymorphiques**.
+
+Reprenons l'exemple des produits :
+
+On sait que, dans notre application, on peut se retrouver avec des instances de `ProduitRect` ou bien de `ProduitCirc`. En réalité, ces instances sont également de **type** `AbstractProduit`, puisque ces classes héritent d'`AbstractProduit`. Oui, concrètement, il s'agit de `ProduitRect` ou de `ProduitCirc`. Mais le fait est que si on le souhaite, on peut les considérer en tant qu'`AbstractProduit`.
+
+Ainsi, si je dispose par exemple d'une fonction `getProduits` renvoyant une liste de produits contenant des rectangulaires et des circulaires, alors je ne peux prévoir précisément de quelle quantité de produits de chaque type je disposerai, ni dans quel ordre ils vont arriver.
+
+Je peux alors décider de les considérer comme des `AbstractProduit` :
+
+```php
+/**
+ * Gets all products
+ *
+ * @return AbstractProduit[]
+ */
+function getProduits(): array
+{
+  $produitRect = new ProduitRect(600, 800);
+  $produitCirc = new ProduitCirc();
+
+  return [$produitRect, $produitCirc];
+}
+```
+
+> La PHPDoc `@return` permet à votre IDE de déterminer précisément que cette fonction va retourner un tableau d'`AbstractProduit`, puisque dans la signature de la fonction, on ne peut pas mettre directement `AbstractProduit[]` mais seulement `array`
+
+Et à l'utilisation :
+
+```php
+$mesProduits = getProduits();
+
+foreach ($mesProduits as $monProduit) {
+  // Quel que soit le type (rect ou circ) de l'objet, on sait que vu qu'il hérite de la classe AbstractProduit, alors il est obligatoire qu'il fournisse une implémentation de cette méthode
+  echo $monProduit->getSurface();
+}
+```
+
+Le comportement sera donc polymorphique, puisqu'en fonction du type, on aura une exécution différente de `getSurface`.
+
+### Interfaces
+
+Il est également possible de définir des abstractions à l'aide des **interfaces**.
+
+Les interfaces sont quant à elles concentrées uniquement sur la définition de **prototypes de méthodes publiques**. Une classe peut ensuite **implémenter** une ou plusieurs interfaces. Dans ce cas, elle est obligée de fournir une implémentation de toutes les méthodes définies dans l'interface.
+
+> On appelle communément une interface un **contrat d'implémentation**. Cela consiste simplement à dire : "si cette classe implémente cette interface, alors elle doit fournir une implémentation de toutes les méthodes définies dans l'interface", comme un contrat à respecter
+
+Par exemple :
+
+```php
+interface IDisplayable
+{
+
+  public function display(): void;
+}
+
+class ProduitRect implements IDisplayable
+{
+  //...
+
+  public function display(): void
+  {
+    echo "Je suis un produit rectangulaire";
+  }
+}
+
+class ProduitCirc implements IDisplayable
+{
+  //...
+
+  public function display(): void
+  {
+    echo "Je suis un produit circulaire";
+  }
+}
+```
+
+Ainsi, tout comme nous l'avons vu précédemment concernant les classes abstraites, il est possible de considérer des instances de `ProduitRect` ou `ProduitCirc` comme des types `IDisplayable`.
+
+Quel que soit le type concret de l'objet, si on le considère comme un `IDisplayable` alors on sait qu'il doit respecter le contrat et qu'on peut donc appeler la méthode `display` sur cet objet.
+
+Nous aurons donc également un comportement polymorphique.
