@@ -1,5 +1,18 @@
 # PHP - Introduction
 
+## Configuration pour PDO
+
+Ajouter un fichier `config.ini` dans le dossier `config` situé à la racine, avec le format suivant :
+
+```ini
+[database]
+host = '127.0.0.1'
+db_name = nom_base_de_donnees
+user = nom_suer
+password = mt_de_passe
+charset = utf8mb4
+```
+
 ## Bases
 
 ### Tags d'ouverture et fermeture
