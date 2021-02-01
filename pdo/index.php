@@ -1,8 +1,10 @@
 <?php
 
-$dsn = 'mysql:dbname=sciences_u_users;host=127.0.0.1;charset=utf8mb4';
-$user = 'sciences_u_users';
-$password = 'JqDVl3OsCjYW70jv';
+$config = parse_ini_file(__DIR__ . '/../config/config.ini');
+
+$dsn = 'mysql:dbname=' . $config['db_name'] . ';host=' . $config['host'] . ';charset=' . $config['charset'];
+$user = $config['user'];
+$password = $config['password'];
 
 try {
   $pdo = new PDO($dsn, $user, $password);
