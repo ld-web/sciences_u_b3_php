@@ -1,16 +1,8 @@
 <?php
 
-$config = parse_ini_file(__DIR__ . '/../config/config.ini');
+require_once 'Db.php';
 
-$dsn = 'mysql:dbname=' . $config['db_name'] . ';host=' . $config['host'] . ';charset=' . $config['charset'];
-$user = $config['user'];
-$password = $config['password'];
-
-try {
-  $pdo = new PDO($dsn, $user, $password);
-} catch (PDOException $e) {
-  echo 'Connexion échouée : ' . $e->getMessage();
-}
+$pdo = Db::getInstance();
 
 // $query = "SELECT * FROM users";
 // $stmt = $pdo->query($query);
