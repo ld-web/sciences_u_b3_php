@@ -8,7 +8,7 @@ Ajouter un fichier `config.ini` dans le dossier `config` situé à la racine, av
 [database]
 host = '127.0.0.1'
 db_name = nom_base_de_donnees
-user = nom_suer
+user = nom_user
 password = mt_de_passe
 charset = utf8mb4
 ```
